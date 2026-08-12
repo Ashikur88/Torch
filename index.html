@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proton Jet Rear LED Test</title>
+<style>
+body{font-family:sans-serif;text-align:center;padding:18px}
+button{font-size:20px;padding:14px 24px;margin:8px}
+#status{margin:18px 0;font-size:18px}
+video{width:1px;height:1px;opacity:.01}
+</style>
+</head>
+<body>
+<h2>Rear LED / Camera Torch Test</h2>
+<div id="status">Press Start.</div>
+<button onclick="start()">START</button><br>
+<button onclick="torch(true)">LED ON</button>
+<button onclick="torch(false)">LED OFF</button>
+
+<video id="v" autoplay playsinline muted></video>
+
+<script>
+let stream=null, track=null;
+
+async function start(){
+  const s=document.getElementById("status");
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:"environment"}}, audio:false
+    });
+    document.getElementById("v").srcObject=stream;
+    track=stream.getVideoTracks()[0];
+    s.textContent="Camera opened. Try LED ON.";
+  }catch(e){
+    s.textContent="Camera access failed: "+e.name+" / "+e.message;
+  }
+}
+
+async function torch(on){
+  const s=document.getElementById("status");
+  if(!track){s.textContent="Press START first.";return;}
+  try{
+    await track.applyConstraints({advanced:[{torch:on}]});
+    s.textContent=on ? "LED ON command sent." : "LED OFF command sent.";
+  }catch(e){
+    s.textContent="Torch control is not supported: "+e.name+" / "+e.message;
+  }
+}
+</script>
+</body>
+</html>
